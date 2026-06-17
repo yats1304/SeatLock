@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.routes.js";
+import eventRouters from "./routes/event.routes.js";
 
 const app = express();
 
@@ -17,11 +18,12 @@ app.use(
 
 // routes
 app.use("/api/auth", authRoutes);
+app.use("/api/event", eventRouters);
 
-app.use("/", (req: Request, res: Response) => {
-  res.json({
-    message: "SeatLock API is running",
-  });
-});
+// app.use("/", (req: Request, res: Response) => {
+//   res.json({
+//     message: "SeatLock API is running",
+//   });
+// });
 
 export default app;

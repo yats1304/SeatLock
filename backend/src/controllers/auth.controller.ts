@@ -1,5 +1,5 @@
 import { TryCatch } from "../utils/tryCatch.js";
-import * as authService from "../services/auth.services.js";
+import * as authService from "../services/auth.service.js";
 import ErrorHandler from "../utils/errorHandler.js";
 
 export const register = TryCatch(async (req, res) => {

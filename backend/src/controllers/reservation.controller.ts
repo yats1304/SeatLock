@@ -22,3 +22,17 @@ export const reserveSeats = TryCatch(async (req, res) => {
     reservation,
   });
 });
+
+export const getMyReservations = TryCatch(async (req, res) => {
+  if (!req.user) {
+    throw new ErrorHandler(401, "Please login first!");
+  }
+  const userId = req.user._id.toString();
+
+  const reservations = await reservationService.getMyReservations(userId);
+
+  res.json({
+    message: "Reservation fetch successfully",
+    reservations,
+  });
+});

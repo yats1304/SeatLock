@@ -12,6 +12,7 @@ const router = express.Router();
 
 router.get("/", validate(getEventsSchema, "query"), eventController.getEvents);
 router.get("/kpis", eventController.getEventKPIs);
+router.get("/:eventId/seats", eventController.getEventSeats);
 router.get("/:id", eventController.getEventById);
 router.post(
   "/create",

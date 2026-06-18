@@ -128,3 +128,21 @@ export const deleteEvent = async (eventId: string) => {
 
   return event;
 };
+
+export const getEventSeats = async (eventId: string) => {
+  const event = await Event.findById(eventId);
+
+  if (!event) {
+    throw new ErrorHandler(404, "Event not found!");
+  }
+
+  const seats = await Seat.find({
+    eventId,
+  })
+    .select("seatNumber status reservedUntil")
+    .sort({
+      seatNumber: 1,
+    });
+
+  return seats;
+};

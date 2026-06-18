@@ -5,12 +5,14 @@ import authRoutes from "./routes/auth.routes.js";
 import eventRouters from "./routes/event.routes.js";
 import reservationRoutes from "./routes/reservation.routes.js";
 import bookingRoutes from "./routes/booking.routes.js";
+import helmet from "helmet";
 
 const app = express();
 
 // middleware
 app.use(express.json());
 app.use(cookieParser());
+app.use(helmet());
 app.use(
   cors({
     origin: "*",

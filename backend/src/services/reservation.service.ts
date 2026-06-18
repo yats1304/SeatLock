@@ -27,16 +27,29 @@ export const reserveSeats = async (
       },
     }).session(session);
 
-    if (seats.length !== seatNumbers.length) {
-      throw new ErrorHandler(400, "One or more seats do not exits!");
-    }
+    const existingSeatNumbers = seats.map((seat) => seat.seatNumber);
+    const nonExistingSeats = seatNumbers.filter(
+      (sn) => !existingSeatNumbers.includes(sn),
+    );
 
-    const unavailableSeat = seats.find((seat) => seat.status !== "available");
-
-    if (unavailableSeat) {
+    if (nonExistingSeats.length > 0) {
+      const seatWord = nonExistingSeats.length > 1 ? "Seats" : "Seat";
+      const verb = nonExistingSeats.length > 1 ? "do" : "does";
       throw new ErrorHandler(
         400,
-        `Seat ${unavailableSeat.seatNumber} is not available`,
+        `${seatWord} ${nonExistingSeats.join(", ")} ${verb} not exist!`,
+      );
+    }
+
+    const unavailableSeats = seats.filter((seat) => seat.status !== "available");
+
+    if (unavailableSeats.length > 0) {
+      const seatNumbersStr = unavailableSeats.map((seat) => seat.seatNumber).join(", ");
+      const seatWord = unavailableSeats.length > 1 ? "Seats" : "Seat";
+      const verb = unavailableSeats.length > 1 ? "are" : "is";
+      throw new ErrorHandler(
+        400,
+        `${seatWord} ${seatNumbersStr} ${verb} not available`,
       );
     }
 
@@ -82,4 +95,14 @@ export const reserveSeats = async (
   } finally {
     session.endSession();
   }
+};
+
+export const getMyReservations = async (userId: string) => {
+  const reservations = await Reservation.find({ userId })
+    .populate("eventId", "name venue dateTime")
+    .sort({
+      createdAt: -1,
+    });
+
+  return reservations;
 };

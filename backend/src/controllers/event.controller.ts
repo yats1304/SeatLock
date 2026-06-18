@@ -62,3 +62,14 @@ export const deleteEvent = TryCatch(async (req, res) => {
     message: "Event deleted successfully",
   });
 });
+
+export const getEventSeats = TryCatch(async (req, res) => {
+  const eventId = req.params.eventId as string;
+
+  const seats = await eventService.getEventSeats(eventId);
+
+  res.json({
+    message: "Get event seats",
+    seats,
+  });
+});

@@ -12,13 +12,13 @@ const app = express();
 // middleware
 app.use(express.json());
 app.use(cookieParser());
-app.use(helmet());
 app.use(
   cors({
-    origin: "*",
+    origin: process.env.CLIENT_URL || "http://localhost:3000",
     credentials: true,
   }),
 );
+app.use(helmet());
 
 // routes
 app.use("/api/auth", authRoutes);

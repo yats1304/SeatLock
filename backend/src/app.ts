@@ -3,6 +3,8 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.routes.js";
 import eventRouters from "./routes/event.routes.js";
+import reservationRoutes from "./routes/reservation.routes.js";
+import bookingRoutes from "./routes/booking.routes.js";
 
 const app = express();
 
@@ -19,6 +21,8 @@ app.use(
 // routes
 app.use("/api/auth", authRoutes);
 app.use("/api/event", eventRouters);
+app.use("/api/reservations", reservationRoutes);
+app.use("/api/booking", bookingRoutes);
 
 // app.use("/", (req: Request, res: Response) => {
 //   res.json({

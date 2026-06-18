@@ -18,6 +18,15 @@ const seatSchema = new Schema<ISeat>(
       enum: ["available", "reserved", "booked"],
       default: "available",
     },
+    reservedBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+    reservedUntil: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,

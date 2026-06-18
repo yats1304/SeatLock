@@ -3,7 +3,7 @@ import { Reservation } from "../models/reservation.model.js";
 import ErrorHandler from "../utils/errorHandler.js";
 import { Seat } from "../models/seat.model.js";
 
-export const confirmBooking = async (reservationId: string) => {
+export const confirmBooking = async (userId: string, reservationId: string) => {
   const session = await mongoose.startSession();
 
   session.startTransaction();
@@ -14,6 +14,13 @@ export const confirmBooking = async (reservationId: string) => {
 
     if (!reservation) {
       throw new ErrorHandler(404, "Reservation is not found!");
+    }
+
+    if (reservation.userId.toString() !== userId) {
+      throw new ErrorHandler(
+        403,
+        "You are not authorized to book this reservation",
+      );
     }
 
     if (reservation.expiredAt < new Date()) {

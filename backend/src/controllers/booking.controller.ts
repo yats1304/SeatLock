@@ -1,10 +1,16 @@
 import { TryCatch } from "../utils/tryCatch.js";
 import * as bookingService from "../services/booking.service.js";
+import ErrorHandler from "../utils/errorHandler.js";
 
 export const confirmBooking = TryCatch(async (req, res) => {
   const reservationId = req.params.reservationId as string;
 
-  const booking = await bookingService.confirmBooking(reservationId);
+  if (!req.user) {
+    throw new ErrorHandler(401, "Please login first!");
+  }
+  const userId = req.user._id.toString();
+
+  const booking = await bookingService.confirmBooking(userId, reservationId);
 
   res.json({
     message: "Booking confirm successfully",

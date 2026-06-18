@@ -11,10 +11,6 @@ export const reserveSeats = TryCatch(async (req, res) => {
   }
   const userId = req.user._id.toString();
 
-  if (!userId) {
-    throw new ErrorHandler(400, "User is not exits");
-  }
-
   const reservation = await reservationService.reserveSeats(
     userId,
     eventId,

@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { getProfile } from "@/services/auth.service";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { setUser, setLoading } from "@/slices/authSlice";
-import { LoadingScreen } from "@/components/ui/loading";
+import { LoadingScreen } from "@/components/loading";
 
 export default function AuthInitializer({
   children,
@@ -19,7 +19,7 @@ export default function AuthInitializer({
       try {
         const response = await getProfile();
 
-        dispatch(setUser(response.user));
+        dispatch(setUser(response.data));
       } catch (error) {
         console.log("Not authenticated");
       } finally {

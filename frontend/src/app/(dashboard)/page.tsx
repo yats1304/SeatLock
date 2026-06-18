@@ -9,7 +9,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-// --- Seat Row Illustration (adapted for black banner + white seats) ---
 const SeatRowIllustration = () => {
   const rows = [
     { count: 6, scale: 0.7, opacity: 0.06 },
@@ -19,14 +18,15 @@ const SeatRowIllustration = () => {
   ];
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 flex flex-col items-center gap-2 pb-4 pointer-events-none select-none overflow-hidden">
+    <div className="absolute bottom-0 left-0 right-0 flex flex-col items-center gap-2 pb-4 select-none overflow-hidden">
       {rows.map((row, i) => (
         <div key={i} className="flex gap-2" style={{ opacity: row.opacity }}>
           {Array.from({ length: row.count }).map((_, j) => (
             <div
               key={j}
-              // Changed from bg-foreground to bg-background so seats are white on black hero banner
-              className="bg-background rounded-t-sm"
+              className="bg-white/30 dark:bg-foreground/20 rounded-t-sm 
+                         transition-colors duration-200 ease-out
+                         hover:bg-white dark:hover:bg-white"
               style={{
                 width: `${row.scale * 28}px`,
                 height: `${row.scale * 22}px`,
@@ -39,7 +39,6 @@ const SeatRowIllustration = () => {
     </div>
   );
 };
-
 // --- Quick Action Card ---
 const ActionCard = ({
   icon: Icon,
@@ -55,8 +54,7 @@ const ActionCard = ({
   <Link href={href} className="group block">
     <Card className="h-full border border-border hover:border-foreground transition-all duration-200 hover:shadow-none">
       <CardContent className="p-6 flex flex-col gap-4 h-full">
-        {/* Icon container: slightly larger, pure black on white, invert on hover */}
-        <div className="w-12 h-12 rounded-xl border border-border flex items-center justify-center bg-white group-hover:bg-foreground group-hover:text-background group-hover:border-foreground transition-all duration-200">
+        <div className="w-12 h-12 rounded-xl border border-border flex items-center justify-center bg-background group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all duration-200">
           <Icon className="w-5 h-5" />
         </div>
         <div className="flex-1">
@@ -74,20 +72,17 @@ const ActionCard = ({
   </Link>
 );
 
-// --- Tip Row ---
 const Tip = ({ text }: { text: string }) => (
   <li className="flex items-start gap-3 text-sm text-muted-foreground">
-    <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-foreground shrink-0" />
+    <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
     {text}
   </li>
 );
 
-// --- Dashboard Page ---
 export default function DashboardPage() {
   return (
     <div className="space-y-10 pb-12">
-      {/* Hero Banner – now purely black with white text and subtle white seat pattern */}
-      <div className="relative rounded-2xl overflow-hidden bg-foreground text-background min-h-55 flex flex-col justify-between p-8">
+      <div className="relative rounded-2xl overflow-hidden bg-zinc-950 text-white dark:bg-card dark:border dark:border-border min-h-55 flex flex-col justify-between p-8">
         <SeatRowIllustration />
         <div className="relative z-10 space-y-1">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] opacity-50">
@@ -148,7 +143,6 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* Divider – solid black for stronger contrast */}
       <div className="border-t border-foreground/20" />
 
       {/* Getting Started & How it Works */}
@@ -165,7 +159,7 @@ export default function DashboardPage() {
           </ul>
         </div>
 
-        {/* How it works card – now with subtle border instead of muted background */}
+        {/* How it works card */}
         <div className="rounded-2xl border border-border p-6 flex flex-col gap-4">
           <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
             How it works

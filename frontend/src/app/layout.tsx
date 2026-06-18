@@ -4,6 +4,7 @@ import "./globals.css";
 import AppProvider from "@/providers/provider";
 import { Toaster } from "react-hot-toast";
 import AuthInitializer from "@/components/auth/AuthInitializer";
+import { ThemeProvider } from "@/components/theme-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,14 +29,24 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body suppressHydrationWarning>
+      <body suppressHydrationWarning className="bg-background text-foreground">
         <AppProvider>
-          <AuthInitializer>
-            {children}
-            <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
-          </AuthInitializer>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <AuthInitializer>{children}</AuthInitializer>
+            <Toaster 
+              position="top-right" 
+              toastOptions={{ duration: 3000 }} 
+              containerClassName="mt-14"
+            />
+          </ThemeProvider>
         </AppProvider>
       </body>
     </html>

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTheme } from "next-themes";
 
 import {
   CalendarDays,
@@ -10,6 +11,8 @@ import {
   User,
   LogOut,
   Menu,
+  Moon,
+  Sun,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -25,13 +28,32 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-
-import { useAppSelector } from "@/hooks/redux";
+import toast from "react-hot-toast";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import { logoutUser } from "@/services/auth.service";
+import { clearUser, setLoading } from "@/slices/authSlice";
 
 export default function Navbar() {
   const pathname = usePathname();
 
+  const dispatch = useAppDispatch();
+
   const { user, isAuth } = useAppSelector((state) => state.auth);
+
+  const logoutHandler = async () => {
+    try {
+      dispatch(setLoading(true));
+      const response = await logoutUser();
+
+      dispatch(clearUser());
+
+      toast.success(response.message || "Logged out successfully");
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || "Logout failed");
+    } finally {
+      dispatch(setLoading(false));
+    }
+  };
 
   const links = [
     {
@@ -91,6 +113,8 @@ export default function Navbar() {
             })}
           </nav>
 
+          <ThemeToggle />
+
           {!isAuth ? (
             <Link href="/login">
               <Button>Login</Button>
@@ -127,9 +151,7 @@ export default function Navbar() {
 
                 <DropdownMenuItem
                   className="cursor-pointer text-red-500"
-                  onClick={() => {
-                    // logout logic
-                  }}
+                  onClick={logoutHandler}
                 >
                   <LogOut className="mr-2 h-4 w-4" />
                   Logout
@@ -140,7 +162,8 @@ export default function Navbar() {
         </div>
 
         {/* Mobile Navigation */}
-        <div className="md:hidden">
+        <div className="md:hidden flex items-center gap-2">
+          <ThemeToggle />
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon">
@@ -212,9 +235,7 @@ export default function Navbar() {
 
                         <button
                           className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-950/50 transition-colors w-full text-left"
-                          onClick={() => {
-                            // logout logic
-                          }}
+                          onClick={logoutHandler}
                         >
                           <LogOut size={18} />
                           Logout
@@ -229,5 +250,21 @@ export default function Navbar() {
         </div>
       </div>
     </header>
+  );
+}
+
+export function ThemeToggle() {
+  const { theme, setTheme } = useTheme();
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+    >
+      <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+      <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+      <span className="sr-only">Toggle theme</span>
+    </Button>
   );
 }

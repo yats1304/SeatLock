@@ -12,7 +12,8 @@ import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import { loginUser } from "@/services/auth.service";
 import { useRouter } from "next/navigation";
-import { useAppDispatch } from "@/hooks/useRedux";
+import { useAppDispatch, useAppSelector } from "@/hooks/useRedux";
+import { useEffect } from "react";
 import toast from "react-hot-toast";
 import { setUser } from "@/slices/authSlice";
 import type { User } from "@/types/user";
@@ -29,6 +30,13 @@ const LoginPage = () => {
 
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const { isAuth } = useAppSelector((state) => state.auth);
+
+  useEffect(() => {
+    if (isAuth) {
+      router.replace("/");
+    }
+  }, [isAuth, router]);
 
   const onSubmit = async (data: LoginFormData) => {
     try {

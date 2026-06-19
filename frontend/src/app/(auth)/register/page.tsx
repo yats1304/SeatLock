@@ -11,10 +11,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { registerUser } from "@/services/auth.service";
 import { useRouter } from "next/navigation";
-import { useAppDispatch } from "@/hooks/useRedux";
+import { useAppDispatch, useAppSelector } from "@/hooks/useRedux";
 import { User } from "@/types/user";
 import { setUser } from "@/slices/authSlice";
 import toast from "react-hot-toast";
@@ -32,6 +32,13 @@ export default function RegisterPage() {
 
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const { isAuth } = useAppSelector((state) => state.auth);
+
+  useEffect(() => {
+    if (isAuth) {
+      router.replace("/");
+    }
+  }, [isAuth, router]);
 
   const onSubmit = async (data: RegisterFormData) => {
     try {

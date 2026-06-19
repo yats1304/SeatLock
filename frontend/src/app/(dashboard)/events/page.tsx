@@ -33,6 +33,14 @@ export default function EventsPage() {
 
   useEffect(() => {
     fetchKPIs();
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("create") === "true") {
+        setIsCreateModalOpen(true);
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, "", newUrl);
+      }
+    }
   }, []);
 
   useEffect(() => {

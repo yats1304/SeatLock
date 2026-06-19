@@ -1,13 +1,17 @@
+"use client";
+
 import { Card, CardContent } from "@/components/ui/card";
 import {
   CalendarDays,
   TicketCheck,
-  MapPin,
   ArrowRight,
   Users,
-  Layers,
+  User,
+  LogIn,
+  Plus,
 } from "lucide-react";
 import Link from "next/link";
+import { useAppSelector } from "@/hooks/useRedux";
 
 const SeatRowIllustration = () => {
   const rows = [
@@ -39,6 +43,7 @@ const SeatRowIllustration = () => {
     </div>
   );
 };
+
 // --- Quick Action Card ---
 const ActionCard = ({
   icon: Icon,
@@ -52,7 +57,7 @@ const ActionCard = ({
   href: string;
 }) => (
   <Link href={href} className="group block">
-    <Card className="h-full border border-border hover:border-foreground transition-all duration-200 hover:shadow-none">
+    <Card className="h-full border border-border hover:border-foreground transition-all duration-200 hover:shadow-none bg-card">
       <CardContent className="p-6 flex flex-col gap-4 h-full">
         <div className="w-12 h-12 rounded-xl border border-border flex items-center justify-center bg-background group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all duration-200">
           <Icon className="w-5 h-5" />
@@ -80,13 +85,64 @@ const Tip = ({ text }: { text: string }) => (
 );
 
 export default function DashboardPage() {
+  const { user, isAuth } = useAppSelector((state) => state.auth);
+
+  const actions = [
+    {
+      icon: CalendarDays,
+      title: "Browse Events",
+      description: "Explore available events and reserve seats in real time.",
+      href: "/events",
+    },
+  ];
+
+  if (isAuth) {
+    actions.unshift({
+      icon: Plus,
+      title: "Create an Event",
+      description:
+        "Set up a new seat booking event with venue, capacity and date details.",
+      href: "/events?create=true",
+    });
+    actions.push(
+      {
+        icon: TicketCheck,
+        title: "My Reservations",
+        description:
+          "View and confirm your active reserved seats before they expire.",
+        href: "/reservations",
+      },
+      {
+        icon: Users,
+        title: "My Bookings",
+        description: "Check all your finalized ticket and seat bookings.",
+        href: "/bookings",
+      },
+      {
+        icon: User,
+        title: "My Profile",
+        description:
+          "Manage your profile details and update account security preferences.",
+        href: "/profile",
+      },
+    );
+  } else {
+    actions.push({
+      icon: LogIn,
+      title: "Sign In",
+      description:
+        "Log in to your account to reserve seats and manage bookings.",
+      href: "/login",
+    });
+  }
+
   return (
     <div className="space-y-10 pb-12">
       <div className="relative rounded-2xl overflow-hidden bg-zinc-950 text-white dark:bg-card dark:border dark:border-border min-h-55 flex flex-col justify-between p-8">
         <SeatRowIllustration />
         <div className="relative z-10 space-y-1">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] opacity-50">
-            Welcome to
+            {isAuth ? `Welcome back, ${user?.name}` : "Welcome to"}
           </p>
           <h1 className="text-4xl font-bold tracking-tight">SeatLock</h1>
         </div>
@@ -104,46 +160,19 @@ export default function DashboardPage() {
           Quick Actions
         </h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <ActionCard
-            icon={CalendarDays}
-            title="Create an Event"
-            description="Set up a new event with venue details, date, and seating capacity."
-            href="/events/new"
-          />
-          <ActionCard
-            icon={MapPin}
-            title="Manage Venues"
-            description="Configure your venues, seat layouts, and section maps."
-            href="/venues"
-          />
-          <ActionCard
-            icon={TicketCheck}
-            title="View Reservations"
-            description="Browse all active reservations and update their status."
-            href="/reservations"
-          />
-          <ActionCard
-            icon={Users}
-            title="Attendees"
-            description="See who's coming to your events and manage guest lists."
-            href="/attendees"
-          />
-          <ActionCard
-            icon={Layers}
-            title="Seat Plans"
-            description="Design and assign seat plans to any of your upcoming events."
-            href="/seat-plans"
-          />
-          <ActionCard
-            icon={CalendarDays}
-            title="Upcoming Events"
-            description="Review all scheduled events and their current booking status."
-            href="/events"
-          />
+          {actions.map((action, index) => (
+            <ActionCard
+              key={index}
+              icon={action.icon}
+              title={action.title}
+              description={action.description}
+              href={action.href}
+            />
+          ))}
         </div>
       </section>
 
-      <div className="border-t border-foreground/20" />
+      <div className="border-t border-border" />
 
       {/* Getting Started & How it Works */}
       <section className="grid md:grid-cols-2 gap-8">
@@ -152,10 +181,20 @@ export default function DashboardPage() {
             Getting Started
           </h2>
           <ul className="space-y-3.5">
-            <Tip text="Create your first event by heading to Events → New Event." />
-            <Tip text="Set up a venue and define seat rows before assigning a seat plan." />
-            <Tip text="Once an event is live, share the booking link with your attendees." />
-            <Tip text="Track reservations in real time from the Reservations tab." />
+            {isAuth ? (
+              <>
+                <Tip text="Create your first event by clicking 'Create an Event' from the Quick Actions." />
+                <Tip text="Browse public events and try selecting some seats on the Seat Grid." />
+                <Tip text="Confirm your seat reservations from the Reservations tab before the countdown timer expires." />
+                <Tip text="Review your finalized bookings history in the Bookings tab." />
+              </>
+            ) : (
+              <>
+                <Tip text="Sign in to your account or register to start reserving seats." />
+                <Tip text="Browse the list of events and check current seating availability." />
+                <Tip text="Create and manage your own custom events once logged in." />
+              </>
+            )}
           </ul>
         </div>
 
@@ -169,22 +208,22 @@ export default function DashboardPage() {
               {
                 step: "01",
                 label: "Create an event",
-                sub: "Add details, date, and venue.",
+                sub: "Add details, date, venue, and seating capacity.",
               },
               {
                 step: "02",
-                label: "Assign a seat plan",
-                sub: "Map seats to sections and rows.",
+                label: "Reserve seats",
+                sub: "Browse live events and select seats from the interactive map.",
               },
               {
                 step: "03",
-                label: "Open for bookings",
-                sub: "Let attendees reserve their spots.",
+                label: "Confirm booking",
+                sub: "Finalize your seat reservations from the Reservations page.",
               },
               {
                 step: "04",
-                label: "Confirm & manage",
-                sub: "Track, confirm, or cancel reservations.",
+                label: "Manage bookings",
+                sub: "Track all confirmed seat tickets in one place.",
               },
             ].map(({ step, label, sub }) => (
               <div key={step} className="flex items-start gap-4">

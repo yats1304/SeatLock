@@ -22,7 +22,6 @@ export default function ConfirmBookingModal({
   seatNumbers,
   isLoading = false,
 }: ConfirmBookingModalProps) {
-  // Prevent background scroll when modal is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -48,7 +47,7 @@ export default function ConfirmBookingModal({
       <div
         className={cn(
           "relative w-full max-w-md overflow-hidden rounded-xl border border-border bg-card p-6 shadow-2xl transition-all",
-          "animate-in fade-in zoom-in-95 duration-200"
+          "animate-in fade-in zoom-in-95 duration-200",
         )}
       >
         {/* Close Button */}
@@ -105,7 +104,8 @@ export default function ConfirmBookingModal({
 
         {/* Warning text */}
         <p className="text-xs text-muted-foreground text-center mb-6">
-          Confirming this booking will finalize your seat reservations permanently.
+          Confirming this booking will finalize your seat reservations
+          permanently.
         </p>
 
         {/* Action Buttons */}

@@ -3,20 +3,15 @@
 import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Plus,
-  Search,
-  Calendar,
-  Layers,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { Plus, Search, Calendar, Layers } from "lucide-react";
 import KpiCard from "@/components/event/KpiCard";
 import EventCard from "@/components/event/EventCard";
 import { getEvent, getEventKPIs } from "@/services/event.service";
 import Link from "next/link";
 import { useAppSelector } from "@/hooks/useRedux";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Pagination } from "@/components/ui/Pagination";
+import CreateEventModal from "@/components/event/CreateEventModal";
 
 export default function EventsPage() {
   const [events, setEvents] = useState<any[]>([]);
@@ -25,6 +20,8 @@ export default function EventsPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
+
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const [kpis, setKpis] = useState({
     totalEvents: 0,
@@ -86,12 +83,13 @@ export default function EventsPage() {
           </p>
         </div>
         {isAuth && (
-          <Link href="/events/new">
-            <Button className="gap-2 group">
-              <Plus className="h-4 w-4 transition-transform group-hover:rotate-90" />
-              Create your own event
-            </Button>
-          </Link>
+          <Button
+            className="gap-2 group cursor-pointer"
+            onClick={() => setIsCreateModalOpen(true)}
+          >
+            <Plus className="h-4 w-4 transition-transform group-hover:rotate-90" />
+            Create your own event
+          </Button>
         )}
       </div>
 
@@ -162,31 +160,11 @@ export default function EventsPage() {
           </div>
 
           {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-4 pt-6 mt-8 border-t border-border">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
-              >
-                <ChevronLeft className="h-4 w-4 mr-1" />
-                Previous
-              </Button>
-              <span className="text-sm font-medium text-muted-foreground">
-                Page {page} of {totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages}
-              >
-                Next
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </Button>
-            </div>
-          )}
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+          />
         </>
       ) : (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-16 text-center">
@@ -200,18 +178,30 @@ export default function EventsPage() {
                 : "Check back later for upcoming events."}
           </p>
           {isAuth && !searchQuery && (
-            <Link href="/events/new" className="mt-6">
-              <Button variant="outline" className="gap-2">
-                <Plus className="h-4 w-4" />
-                Create Event
-              </Button>
-            </Link>
+            <Button
+              variant="outline"
+              className="gap-2 mt-6 cursor-pointer"
+              onClick={() => setIsCreateModalOpen(true)}
+            >
+              <Plus className="h-4 w-4" />
+              Create Event
+            </Button>
           )}
         </div>
       )}
 
       {/* Subtle bottom decoration */}
       <div className="h-px w-full bg-linear-to-r from-transparent via-border to-transparent" />
+
+      {/* Create Event Modal */}
+      <CreateEventModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSuccess={() => {
+          fetchEvents();
+          fetchKPIs();
+        }}
+      />
     </div>
   );
 }

@@ -14,10 +14,9 @@ import {
   CheckCircle2,
   CalendarOff,
   Clock,
-  ChevronLeft,
-  ChevronRight,
 } from "lucide-react";
 import Link from "next/link";
+import { Pagination } from "@/components/ui/Pagination";
 
 const LIMIT = 9;
 
@@ -168,7 +167,7 @@ export default function BookingsPage() {
                     <div>
                       <p className="text-xs text-muted-foreground mb-1.5">Seats</p>
                       <div className="flex flex-wrap gap-1.5">
-                        {booking.seatNumbers.slice(0, 8).map((seat) => (
+                        {booking.seatNumbers.slice(0, 8).map((seat: string) => (
                           <span
                             key={seat}
                             className="text-xs font-medium rounded-md border border-border px-2 py-0.5 bg-background"
@@ -211,31 +210,11 @@ export default function BookingsPage() {
           </div>
 
           {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-4 pt-6 mt-8 border-t border-border">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => goToPage(page - 1)}
-                disabled={page === 1}
-              >
-                <ChevronLeft className="h-4 w-4 mr-1" />
-                Previous
-              </Button>
-              <span className="text-sm font-medium text-muted-foreground">
-                Page {page} of {totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => goToPage(page + 1)}
-                disabled={page === totalPages}
-              >
-                Next
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </Button>
-            </div>
-          )}
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            onPageChange={goToPage}
+          />
         </>
       )}
     </div>

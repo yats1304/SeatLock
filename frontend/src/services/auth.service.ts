@@ -34,3 +34,15 @@ export const logoutUser = async () => {
 
   return data;
 };
+
+export const changePassword = async (
+  currentPassword: string,
+  newPassword: string,
+) => {
+  const { data } = await api.post("auth/change-password", {
+    currentPassword,
+    newPassword,
+  });
+
+  return data;
+};

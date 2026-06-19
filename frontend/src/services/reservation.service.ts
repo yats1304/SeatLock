@@ -19,9 +19,3 @@ export const getReservationById = async (reservationId: string) => {
 
   return data;
 };
-
-export const confirmReservation = async (reservationId: string) => {
-  const { data } = await api.post(`/booking/${reservationId}`);
-
-  return data;
-};

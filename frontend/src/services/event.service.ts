@@ -25,3 +25,20 @@ export const getEventSeats = async (id: string) => {
 
   return data;
 };
+
+export const createEvent = async (payload: {
+  name: string;
+  venue: string;
+  dateTime: string;
+  totalSeats: number | string;
+}) => {
+  const { data } = await api.post("event/create", payload);
+
+  return data;
+};
+
+export const updateEvent = async (eventId: string) => {
+  const { data } = await api.patch(`event/:${eventId}`);
+
+  return data;
+};

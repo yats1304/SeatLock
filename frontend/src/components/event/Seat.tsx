@@ -23,46 +23,67 @@ export default function Seat({
       disabled={isDisabled}
       onClick={onClick}
       className={cn(
-        "relative h-12 w-12 rounded-lg text-xs font-semibold transition-all duration-200 select-none",
-        "border border-dashed border-border bg-background text-muted-foreground",
-        "hover:border-foreground hover:text-foreground hover:shadow-sm",
+        "group relative h-10 w-10 text-[10px] font-bold transition-all duration-200 select-none",
+        "rounded-t-xl rounded-b-md border flex flex-col items-center justify-center p-0.5",
+        // Available State
+        status === "available" && [
+          "border-border bg-background text-muted-foreground",
+          "hover:border-foreground/85 hover:text-foreground hover:scale-105 hover:shadow-md",
+        ],
+        // Selected State
         selected && [
-          "bg-foreground  dark:text-black hover:text-white border-foreground shadow-lg scale-105",
+          "bg-foreground text-background border-foreground dark:text-background dark:border-foreground scale-105 shadow-md",
           "hover:bg-foreground/90",
         ],
-        isReserved &&
-          !selected && [
-            "bg-amber-500/15 text-amber-600 border-amber-400/50 cursor-not-allowed",
-            "dark:bg-amber-500/20 dark:text-amber-400 dark:border-amber-500/40",
-            "hover:bg-amber-500/15 hover:border-amber-400/50",
-          ],
-
-        isBooked &&
-          !selected && [
-            "bg-rose-500/15 text-rose-500 border-rose-400/40 cursor-not-allowed",
-            "dark:bg-rose-500/20 dark:text-rose-400 dark:border-rose-500/40",
-            "hover:bg-rose-500/15 hover:border-rose-400/40",
-          ],
-
-        isDisabled &&
-          !isReserved &&
-          !isBooked &&
-          "opacity-50 cursor-not-allowed",
+        // Reserved State
+        isReserved && !selected && [
+          "bg-amber-500/10 text-amber-600 border-amber-500/30 cursor-not-allowed",
+          "dark:bg-amber-500/15 dark:text-amber-400 dark:border-amber-500/40",
+        ],
+        // Booked State
+        isBooked && !selected && [
+          "bg-rose-500/10 text-rose-500 border-rose-500/30 cursor-not-allowed",
+          "dark:bg-rose-500/15 dark:text-rose-400 dark:border-rose-500/40",
+        ],
+        // General Disabled State
+        isDisabled && !isReserved && !isBooked && "opacity-40 cursor-not-allowed",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
       )}
       aria-label={`Seat ${seatNumber} - ${status}`}
     >
-      <span className="relative z-10">{seatNumber}</span>
+      {/* Visual seat cushion accent */}
+      <span
+        className={cn(
+          "w-full flex-1 rounded-t-lg rounded-b-sm flex items-center justify-center transition-colors relative",
+          status === "available" && "bg-muted/10 group-hover:bg-muted/20",
+          selected && "bg-background/10",
+          isReserved && !selected && "bg-amber-500/10",
+          isBooked && !selected && "bg-rose-500/10",
+        )}
+      >
+        <span className="relative z-10 leading-none">{seatNumber}</span>
+      </span>
 
-      {/* Lock icon for booked seats */}
+      {/* Bottom cushion divider */}
+      <span
+        className={cn(
+          "w-full h-1 mt-0.5 rounded-sm transition-colors",
+          status === "available" && "bg-muted-foreground/20 group-hover:bg-muted-foreground/45",
+          selected && "bg-background/40",
+          isReserved && !selected && "bg-amber-500/30",
+          isBooked && !selected && "bg-rose-500/30",
+        )}
+      />
+
+      {/* Lock icon overlay for booked seats */}
       {isBooked && (
-        <span className="absolute inset-0 flex items-center justify-center">
+        <span className="absolute inset-0 flex items-center justify-center bg-rose-500/5 rounded-t-xl rounded-b-md">
           <svg
-            className="h-5 w-5 text-rose-400/60"
+            className="h-4.5 w-4.5 text-rose-500/70"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
-            strokeWidth={1.5}
+            strokeWidth={2}
           >
             <path
               strokeLinecap="round"

@@ -15,6 +15,7 @@
 - [Architecture & Design Decisions](#architecture--design-decisions)
 - [Database Schema](#database-schema)
 - [API Reference](#api-reference)
+- [Postman Collection](#postman-collection)
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Backend Setup](#backend-setup)
@@ -370,6 +371,46 @@ All routes are prefixed with `/api`.
 |---|---|---|---|---|
 | POST | `/:reservationId` | ✓ | — | Confirm reservation → permanent booking |
 | GET | `/my` | ✓ | `?page` | Get current user's bookings (paginated, 9/page) |
+
+---
+
+## Postman Collection
+
+A ready-to-use Postman collection covering every API endpoint is included in the repository.
+
+📁 **File**: [`postman_collection/SeatLock.postman_collection.json`](./postman_collection/SeatLock.postman_collection.json)
+
+### Import into Postman
+
+1. Open **Postman**
+2. Click **Import** (top-left)
+3. Select the file `postman_collection/SeatLock.postman_collection.json`
+4. The **SeatLock** collection will appear in your sidebar
+
+### Set Up the Environment Variable
+
+The collection uses a `{{SeatLock}}` variable as the base URL so you can switch between local and production with one change.
+
+1. In Postman, go to **Environments** → **New Environment**
+2. Name it (e.g., `SeatLock Local`)
+3. Add a variable:
+
+| Variable | Value (local) | Value (production) |
+|---|---|---|
+| `SeatLock` | `http://localhost:5000` | `https://your-api-domain.com` |
+
+4. Select the environment from the top-right dropdown before sending requests
+
+### Collection Structure
+
+| Folder | Requests |
+|---|---|
+| **Auth** | Register User, Login User, Logout, Get Profile (`/me`), Change Password |
+| **Events** | Get Events (paginated + search), Get Event KPIs, Get Event by ID, Get Event Seats, Create Event, Update Event, Delete Event |
+| **Reservations** | Create Reservation, Get My Reservations, Get Reservation by ID |
+| **Bookings** | Confirm Booking, Get My Bookings |
+
+> 💡 **Tip**: Login first (`Auth → Login User`) — the JWT cookie is automatically stored in Postman's cookie jar and sent with all subsequent authenticated requests.
 
 ---
 

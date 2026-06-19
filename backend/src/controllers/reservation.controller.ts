@@ -36,3 +36,13 @@ export const getMyReservations = TryCatch(async (req, res) => {
     reservations,
   });
 });
+
+export const getReservationById = TryCatch(async (req, res) => {
+  const reservationId = req.params.reservationId as string;
+  const reservation = await reservationService.getReservationById(reservationId);
+  res.json({
+    message: "Reservation fetched successfully",
+    reservation,
+  });
+});
+

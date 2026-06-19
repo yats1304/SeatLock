@@ -29,7 +29,7 @@ import {
 
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import toast from "react-hot-toast";
-import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import { useAppDispatch, useAppSelector } from "@/hooks/useRedux";
 import { logoutUser } from "@/services/auth.service";
 import { clearUser, setLoading } from "@/slices/authSlice";
 
@@ -131,7 +131,7 @@ export default function Navbar() {
                 </button>
               </DropdownMenuTrigger>
 
-              <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuContent align="end" className="w-56 mt-4">
                 <div className="px-2 py-1.5">
                   <p className="font-medium">{user?.name}</p>
 

@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { getProfile } from "@/services/auth.service";
-import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import { useAppDispatch, useAppSelector } from "@/hooks/useRedux";
 import { setUser, setLoading } from "@/slices/authSlice";
 import { LoadingScreen } from "@/components/loading";
 

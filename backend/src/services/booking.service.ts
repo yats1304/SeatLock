@@ -90,10 +90,23 @@ export const confirmBooking = async (userId: string, reservationId: string) => {
   }
 };
 
-export const getMyBookings = async (userId: string) => {
-  const bookings = await Booking.find({ userId })
-    .populate("eventId", "name venue dateTime")
-    .sort({ createdAt: -1 });
+export const getMyBookings = async (userId: string, page: number) => {
+  const limit = 9;
+  const skip = (page - 1) * limit;
 
-  return bookings;
+  const [bookings, total] = await Promise.all([
+    Booking.find({ userId })
+      .populate("eventId", "name venue dateTime")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit),
+    Booking.countDocuments({ userId }),
+  ]);
+
+  return {
+    bookings,
+    total,
+    totalPages: Math.ceil(total / limit),
+    currentPage: page,
+  };
 };

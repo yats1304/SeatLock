@@ -12,7 +12,7 @@ import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import { loginUser } from "@/services/auth.service";
 import { useRouter } from "next/navigation";
-import { useAppDispatch } from "@/hooks/redux";
+import { useAppDispatch } from "@/hooks/useRedux";
 import toast from "react-hot-toast";
 import { setUser } from "@/slices/authSlice";
 import type { User } from "@/types/user";

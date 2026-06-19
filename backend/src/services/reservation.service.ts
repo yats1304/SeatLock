@@ -41,10 +41,14 @@ export const reserveSeats = async (
       );
     }
 
-    const unavailableSeats = seats.filter((seat) => seat.status !== "available");
+    const unavailableSeats = seats.filter(
+      (seat) => seat.status !== "available",
+    );
 
     if (unavailableSeats.length > 0) {
-      const seatNumbersStr = unavailableSeats.map((seat) => seat.seatNumber).join(", ");
+      const seatNumbersStr = unavailableSeats
+        .map((seat) => seat.seatNumber)
+        .join(", ");
       const seatWord = unavailableSeats.length > 1 ? "Seats" : "Seat";
       const verb = unavailableSeats.length > 1 ? "are" : "is";
       throw new ErrorHandler(
@@ -106,3 +110,16 @@ export const getMyReservations = async (userId: string) => {
 
   return reservations;
 };
+
+export const getReservationById = async (id: string) => {
+  const reservation = await Reservation.findById(id)
+    .populate("userId", "name email")
+    .populate("eventId", "name venue dateTime");
+
+  if (!reservation) {
+    throw new ErrorHandler(404, "Reservation not found!");
+  }
+
+  return reservation;
+};
+

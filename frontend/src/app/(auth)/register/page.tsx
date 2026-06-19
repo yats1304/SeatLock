@@ -14,7 +14,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { registerUser } from "@/services/auth.service";
 import { useRouter } from "next/navigation";
-import { useAppDispatch } from "@/hooks/redux";
+import { useAppDispatch } from "@/hooks/useRedux";
 import { User } from "@/types/user";
 import { setUser } from "@/slices/authSlice";
 import toast from "react-hot-toast";

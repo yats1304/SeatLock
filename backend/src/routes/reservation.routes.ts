@@ -5,6 +5,7 @@ import { createReservationSchema } from "../validators/reservation.validate.js";
 import {
   getMyReservations,
   reserveSeats,
+  getReservationById,
 } from "../controllers/reservation.controller.js";
 
 const router = express.Router();
@@ -16,5 +17,6 @@ router.post(
   reserveSeats,
 );
 router.get("/my", isAuth, getMyReservations);
+router.get("/:reservationId", isAuth, getReservationById);
 
 export default router;

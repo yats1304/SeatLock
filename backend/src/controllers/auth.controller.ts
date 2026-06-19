@@ -9,7 +9,8 @@ export const register = TryCatch(async (req, res) => {
 
   res.cookie("jwtToken", data.token, {
     httpOnly: true,
-    sameSite: "none",
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
@@ -27,8 +28,8 @@ export const login = TryCatch(async (req, res) => {
 
   res.cookie("jwtToken", data.token, {
     httpOnly: true,
-    sameSite: "none",
-    secure: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
@@ -42,8 +43,8 @@ export const login = TryCatch(async (req, res) => {
 export const logout = TryCatch(async (req, res) => {
   res.clearCookie("jwtToken", {
     httpOnly: true,
-    secure: true,
-    sameSite: "none",
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
   });
 
   res.json({

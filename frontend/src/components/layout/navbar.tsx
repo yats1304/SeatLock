@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -35,6 +36,7 @@ import { clearUser, setLoading } from "@/slices/authSlice";
 
 export default function Navbar() {
   const pathname = usePathname();
+  const [open, setOpen] = useState(false);
 
   const dispatch = useAppDispatch();
 
@@ -164,7 +166,7 @@ export default function Navbar() {
         {/* Mobile Navigation */}
         <div className="md:hidden flex items-center gap-2">
           <ThemeToggle />
-          <Sheet>
+          <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon">
                 <Menu className="h-5 w-5" />
@@ -186,6 +188,7 @@ export default function Navbar() {
                       <Link
                         key={link.href}
                         href={link.href}
+                        onClick={() => setOpen(false)}
                         className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                           isActive
                             ? "bg-primary/10 text-primary"
@@ -201,7 +204,7 @@ export default function Navbar() {
 
                 <div className="mt-auto flex flex-col gap-4">
                   {!isAuth ? (
-                    <Link href="/login">
+                    <Link href="/login" onClick={() => setOpen(false)}>
                       <Button className="w-full">Login</Button>
                     </Link>
                   ) : (
@@ -227,6 +230,7 @@ export default function Navbar() {
                       <div className="flex flex-col gap-1">
                         <Link
                           href="/profile"
+                          onClick={() => setOpen(false)}
                           className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                         >
                           <User size={18} />
@@ -235,7 +239,10 @@ export default function Navbar() {
 
                         <button
                           className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-950/50 transition-colors w-full text-left"
-                          onClick={logoutHandler}
+                          onClick={() => {
+                            logoutHandler();
+                            setOpen(false);
+                          }}
                         >
                           <LogOut size={18} />
                           Logout

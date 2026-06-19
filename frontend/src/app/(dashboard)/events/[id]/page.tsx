@@ -59,6 +59,10 @@ export default function EventDetailsPage() {
   };
 
   const toggleSeat = (seatNumber: string) => {
+    if (isPast) {
+      toast.error("Cannot select seats for a past event.");
+      return;
+    }
     setSelectedSeats((prev) =>
       prev.includes(seatNumber)
         ? prev.filter((s) => s !== seatNumber)
@@ -67,6 +71,10 @@ export default function EventDetailsPage() {
   };
 
   const handleReserveSeats = async () => {
+    if (isPast) {
+      toast.error("Cannot reserve seats for a past event.");
+      return;
+    }
     if (!isAuth) {
       toast.error("Please log in first to reserve seats.");
       return;
@@ -223,6 +231,15 @@ export default function EventDetailsPage() {
         )}
       </div>
 
+      {isPast && (
+        <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-destructive flex items-center gap-3">
+          <AlertCircle className="h-5 w-5 shrink-0" />
+          <span className="text-sm font-medium">
+            This event has already passed. You cannot select or reserve seats for past events.
+          </span>
+        </div>
+      )}
+
       {/* Statistics cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard icon={Ticket} label="Total Seats" value={event.totalSeats} />
@@ -259,7 +276,7 @@ export default function EventDetailsPage() {
           </div>
           <Button
             size="lg"
-            disabled={selectedSeats.length === 0 || loading}
+            disabled={selectedSeats.length === 0 || loading || isPast}
             onClick={handleReserveSeats}
             className="gap-2 group"
           >

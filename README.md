@@ -39,53 +39,58 @@ If the user doesn't confirm in time, a background cron job automatically release
 
 ## Features
 
-| Feature | Details |
-|---|---|
-| **Auth** | Register, Login, Logout, Change Password — JWT via `HttpOnly` cookies |
-| **Events** | Create, read, update, delete events with seat capacity |
-| **Seat Grid** | Visual seat map per event showing `available`, `reserved`, and `booked` states |
-| **Reservations** | Temporarily reserve seats for 10 minutes with live countdown timer |
-| **Bookings** | Confirm reservations into permanent bookings; paginated booking history |
-| **KPI Dashboard** | Total events, upcoming events, completed events at a glance |
-| **Auto-Expiry** | Cron job runs every minute to release expired reserved seats |
-| **Search** | Search events by name with pagination |
-| **Dark Mode** | System-aware theme toggle (light/dark) |
-| **Input Validation** | Zod schemas on both backend (via middleware) and frontend (via react-hook-form) |
+| Feature                | Details                                                                                    |
+| ---------------------- | ------------------------------------------------------------------------------------------ |
+| **Auth**               | Register, Login, Logout, Change Password — JWT via `HttpOnly` cookies                      |
+| **Events**             | Create, read, update, delete events with seat capacity                                     |
+| **Seat Grid**          | Visual seat map per event showing `available`, `reserved`, and `booked` states             |
+| **Reservations**       | Temporarily reserve seats for 10 minutes with live countdown timer                         |
+| **Bookings**           | Confirm reservations into permanent bookings; paginated booking history                    |
+| **KPI Dashboard**      | Total events, upcoming events, completed events at a glance                                |
+| **Auto-Expiry**        | Cron job runs every minute to release expired reserved seats                               |
+| **Search**             | Search events by name with pagination                                                      |
+| **Dark Mode**          | System-aware theme toggle (light/dark)                                                     |
+| **Input Validation**   | Zod schemas on both backend (via middleware) and frontend (via react-hook-form)            |
+| **My Events**          | Dedicated creator dashboard with search, 9-item pagination, and inline Edit/Delete actions |
+| **Attendee List**      | Real-time table of attendees (name, email, seats, status) for event creators               |
+| **Graceful Fallbacks** | Clean fallback UI (Deleted Event, Venue N/A, etc.) for bookings when events are deleted    |
 
 ---
 
 ## Tech Stack
 
 ### Backend
-| Layer | Technology |
-|---|---|
-| Runtime | Node.js 20 |
-| Framework | Express 5 |
-| Language | TypeScript (ES2022, NodeNext modules) |
-| Database | MongoDB Atlas via Mongoose 9 |
-| Auth | JWT (jsonwebtoken) + HttpOnly cookies |
-| Password Hashing | bcryptjs (10 rounds) |
-| Validation | Zod |
-| CORS | `cors` middleware |
-| Security | `helmet`, `mongo-sanitize` |
-| Cron Jobs | `node-cron` |
-| Dev Server | `nodemon` + `tsx` |
+
+| Layer            | Technology                                 |
+| ---------------- | ------------------------------------------ |
+| Runtime          | Node.js 20                                 |
+| Framework        | Express 5                                  |
+| Language         | TypeScript (ES2022, NodeNext modules)      |
+| Database         | MongoDB Atlas via Mongoose 9               |
+| Auth             | JWT (jsonwebtoken) + HttpOnly cookies      |
+| Password Hashing | bcryptjs (10 rounds)                       |
+| Validation       | Zod                                        |
+| CORS             | `cors` middleware                          |
+| Security         | `helmet`, `mongo-sanitize`                 |
+| Cron Jobs        | `node-cron`                                |
+| Dev Server       | `nodemon` + `tsx`                          |
 | Containerization | Docker (multi-stage build, Node 20 Alpine) |
 
 ### Frontend
-| Layer | Technology |
-|---|---|
-| Framework | Next.js 16 (App Router) |
-| Language | TypeScript |
-| Styling | Tailwind CSS v4 |
-| Component Library | Shadcn/UI + Radix UI |
-| State Management | Redux Toolkit |
-| HTTP Client | Axios (with `withCredentials: true`) |
-| Forms | React Hook Form + Zod resolvers |
-| Icons | Lucide React |
-| Notifications | react-hot-toast |
-| Fonts | Geist Sans & Geist Mono (Google Fonts) |
-| Theme | next-themes (system/light/dark) |
+
+| Layer             | Technology                             |
+| ----------------- | -------------------------------------- |
+| Framework         | Next.js 16 (App Router)                |
+| Language          | TypeScript                             |
+| Styling           | Tailwind CSS v4                        |
+| Component Library | Shadcn/UI + Radix UI                   |
+| State Management  | Redux Toolkit                          |
+| HTTP Client       | Axios (with `withCredentials: true`)   |
+| Forms             | React Hook Form + Zod resolvers        |
+| Icons             | Lucide React                           |
+| Notifications     | react-hot-toast                        |
+| Fonts             | Geist Sans & Geist Mono (Google Fonts) |
+| Theme             | next-themes (system/light/dark)        |
 
 ---
 
@@ -158,6 +163,7 @@ SeatLock/
         │       │   ├── page.tsx        # My reservations list
         │       │   └── [id]/page.tsx   # Reservation detail + confirm button
         │       ├── bookings/page.tsx   # My bookings (paginated)
+        │       ├── my-events/page.tsx  # My events creator dashboard (search, paginated, edit/delete)
         │       └── profile/page.tsx    # Profile + change password
         ├── components/
         │   ├── auth/                   # AuthInitializer (loads user on mount)
@@ -195,24 +201,33 @@ SeatLock/
 This is the core challenge of a seat booking system. SeatLock solves it through **three complementary layers**:
 
 #### Layer 1: MongoDB Compound Unique Index
+
 The `Seat` collection has a compound unique index on `(eventId, seatNumber)`:
+
 ```typescript
 // seat.model.ts
 seatSchema.index({ eventId: 1, seatNumber: 1 }, { unique: true });
 ```
+
 This makes it **physically impossible** for the same seat to be duplicated at the database level.
 
 #### Layer 2: Seat Status State Machine
+
 Every seat tracks a status: `available → reserved → booked`. The reservation service only grabs seats where `status === "available"`:
+
 ```typescript
 // reservation.service.ts
 const unavailableSeats = seats.filter((seat) => seat.status !== "available");
-if (unavailableSeats.length > 0) throw new ErrorHandler(400, "Seat X is not available");
+if (unavailableSeats.length > 0)
+  throw new ErrorHandler(400, "Seat X is not available");
 ```
+
 So two users racing to grab the same seat will result in one failing with a clear error.
 
 #### Layer 3: Mongoose Transactions (ACID)
+
 Both `reserveSeats` and `confirmBooking` run inside a **Mongoose transaction** with a session:
+
 ```typescript
 const session = await mongoose.startSession();
 session.startTransaction();
@@ -220,14 +235,20 @@ session.startTransaction();
 await session.commitTransaction();
 // on error → await session.abortTransaction();
 ```
+
 This ensures atomicity: either all the writes (update seats + create reservation) succeed together, or none do. There's no partial state.
 
 #### Layer 4: 10-Minute Expiry Window + Cron Cleanup
+
 When seats are reserved, a `reservedUntil` timestamp is stored (now + 10 min). The booking confirmation also checks this:
+
 ```typescript
-if (reservation.expiredAt < new Date()) throw new ErrorHandler(400, "Reservation is expired!");
+if (reservation.expiredAt < new Date())
+  throw new ErrorHandler(400, "Reservation is expired!");
 ```
+
 A `node-cron` job runs **every minute** and releases all seats whose `reservedUntil` has passed:
+
 ```typescript
 // cron.ts
 cron.schedule("* * * * *", async () => {
@@ -279,53 +300,58 @@ Global auth state (`user`, `isAuth`, `loading`) is managed in Redux. On app moun
 ## Database Schema
 
 ### User
-| Field | Type | Notes |
-|---|---|---|
-| `name` | String | Required |
-| `email` | String | Required, unique |
-| `password` | String | Bcrypt hashed (10 rounds) |
-| `timestamps` | — | `createdAt`, `updatedAt` |
+
+| Field        | Type   | Notes                     |
+| ------------ | ------ | ------------------------- |
+| `name`       | String | Required                  |
+| `email`      | String | Required, unique          |
+| `password`   | String | Bcrypt hashed (10 rounds) |
+| `timestamps` | —      | `createdAt`, `updatedAt`  |
 
 ### Event
-| Field | Type | Notes |
-|---|---|---|
-| `name` | String | 3–100 chars |
-| `venue` | String | 3–200 chars |
-| `dateTime` | Date | Must be in the future (on create) |
-| `totalSeats` | Number | min: 1 |
-| `timestamps` | — | `createdAt`, `updatedAt` |
+
+| Field        | Type   | Notes                             |
+| ------------ | ------ | --------------------------------- |
+| `name`       | String | 3–100 chars                       |
+| `venue`      | String | 3–200 chars                       |
+| `dateTime`   | Date   | Must be in the future (on create) |
+| `totalSeats` | Number | min: 1                            |
+| `timestamps` | —      | `createdAt`, `updatedAt`          |
 
 ### Seat
-| Field | Type | Notes |
-|---|---|---|
-| `eventId` | ObjectId | ref: Event, indexed |
-| `seatNumber` | String | e.g., `A1`, `A2`, ... |
-| `status` | String | `"available"` \| `"reserved"` \| `"booked"` |
-| `reservedBy` | ObjectId | ref: User, nullable |
-| `reservedUntil` | Date | Set to now + 10 min when reserved; null otherwise |
-| `timestamps` | — | `createdAt`, `updatedAt` |
+
+| Field           | Type     | Notes                                             |
+| --------------- | -------- | ------------------------------------------------- |
+| `eventId`       | ObjectId | ref: Event, indexed                               |
+| `seatNumber`    | String   | e.g., `A1`, `A2`, ...                             |
+| `status`        | String   | `"available"` \| `"reserved"` \| `"booked"`       |
+| `reservedBy`    | ObjectId | ref: User, nullable                               |
+| `reservedUntil` | Date     | Set to now + 10 min when reserved; null otherwise |
+| `timestamps`    | —        | `createdAt`, `updatedAt`                          |
 
 **Indexes**: Compound unique index on `(eventId, seatNumber)`.
 
-### Reservation *(temporary — deleted on confirm or expiry)*
-| Field | Type | Notes |
-|---|---|---|
-| `userId` | ObjectId | ref: User |
-| `eventId` | ObjectId | ref: Event |
+### Reservation _(temporary — deleted on confirm or expiry)_
+
+| Field         | Type     | Notes                          |
+| ------------- | -------- | ------------------------------ |
+| `userId`      | ObjectId | ref: User                      |
+| `eventId`     | ObjectId | ref: Event                     |
 | `seatNumbers` | String[] | Array of reserved seat numbers |
-| `expiredAt` | Date | now + 10 minutes |
-| `timestamps` | — | `createdAt`, `updatedAt` |
+| `expiredAt`   | Date     | now + 10 minutes               |
+| `timestamps`  | —        | `createdAt`, `updatedAt`       |
 
 **Indexes**: TTL index on `expiresAt` with `expireAfterSeconds: 0` (MongoDB auto-deletes expired docs).
 
-### Booking *(permanent)*
-| Field | Type | Notes |
-|---|---|---|
-| `userId` | ObjectId | ref: User |
-| `eventId` | ObjectId | ref: Event |
-| `seatNumbers` | String[] | Confirmed seat numbers |
-| `bookedAt` | Date | `Date.now` |
-| `timestamps` | — | `createdAt`, `updatedAt` |
+### Booking _(permanent)_
+
+| Field         | Type     | Notes                    |
+| ------------- | -------- | ------------------------ |
+| `userId`      | ObjectId | ref: User                |
+| `eventId`     | ObjectId | ref: Event               |
+| `seatNumbers` | String[] | Confirmed seat numbers   |
+| `bookedAt`    | Date     | `Date.now`               |
+| `timestamps`  | —        | `createdAt`, `updatedAt` |
 
 ---
 
@@ -335,42 +361,44 @@ All routes are prefixed with `/api`.
 
 ### Auth — `/api/auth`
 
-| Method | Endpoint | Auth | Body | Description |
-|---|---|---|---|---|
-| POST | `/register` | ✗ | `{ name, email, password }` | Register a new user |
-| POST | `/login` | ✗ | `{ email, password }` | Login, sets JWT cookie |
-| POST | `/logout` | ✓ | — | Clears JWT cookie |
-| POST | `/change-password` | ✓ | `{ currentPassword, newPassword }` | Change password |
-| GET | `/me` | ✓ | — | Get current user profile |
+| Method | Endpoint           | Auth | Body                               | Description              |
+| ------ | ------------------ | ---- | ---------------------------------- | ------------------------ |
+| POST   | `/register`        | ✗    | `{ name, email, password }`        | Register a new user      |
+| POST   | `/login`           | ✗    | `{ email, password }`              | Login, sets JWT cookie   |
+| POST   | `/logout`          | ✓    | —                                  | Clears JWT cookie        |
+| POST   | `/change-password` | ✓    | `{ currentPassword, newPassword }` | Change password          |
+| GET    | `/me`              | ✓    | —                                  | Get current user profile |
 
 **Password rules**: min 8 chars, at least one uppercase, one lowercase, one digit.
 
 ### Events — `/api/event`
 
-| Method | Endpoint | Auth | Body / Query | Description |
-|---|---|---|---|---|
-| GET | `/` | ✗ | `?page&limit&search` | List all events (paginated, searchable) |
-| GET | `/kpis` | ✗ | — | Total / upcoming / completed event counts |
-| GET | `/:id` | ✗ | — | Single event with seat stats |
-| GET | `/:eventId/seats` | ✗ | — | All seats for an event |
-| POST | `/create` | ✓ | `{ name, venue, dateTime, totalSeats }` | Create event + auto-generate seats |
-| PATCH | `/:id` | ✓ | Partial event fields | Update event details |
-| DELETE | `/:id` | ✓ | — | Delete event + all its seats |
+| Method | Endpoint          | Auth | Body / Query                            | Description                                                             |
+| ------ | ----------------- | ---- | --------------------------------------- | ----------------------------------------------------------------------- |
+| GET    | `/`               | ✗    | `?page&limit&search`                    | List all events (paginated, searchable)                                 |
+| GET    | `/kpis`           | ✗    | —                                       | Total / upcoming / completed event counts                               |
+| GET    | `/my-events`      | ✓    | `?page&limit&search`                    | List user's created events (paginated, searchable)                      |
+| GET    | `/:id`            | ✗    | —                                       | Single event details (hides seat booking controls if viewer is creator) |
+| GET    | `/:eventId/seats` | ✗    | —                                       | All seats for an event                                                  |
+| GET    | `/:id/attendees`  | ✓    | —                                       | Get registered attendee details for a created event (creator only)      |
+| POST   | `/create`         | ✓    | `{ name, venue, dateTime, totalSeats }` | Create event + auto-generate seats                                      |
+| PATCH  | `/:id`            | ✓    | Partial event fields                    | Update event details (disabled for past/expired events)                 |
+| DELETE | `/:id`            | ✓    | —                                       | Delete event + all its seats (disabled for past/expired events)         |
 
 ### Reservations — `/api/reservations`
 
-| Method | Endpoint | Auth | Body | Description |
-|---|---|---|---|---|
-| POST | `/create/:eventId` | ✓ | `{ seatNumbers: string[] }` | Reserve seats (10-min lock) |
-| GET | `/my` | ✓ | — | Get current user's active reservations |
-| GET | `/:reservationId` | ✓ | — | Get a single reservation by ID |
+| Method | Endpoint           | Auth | Body                        | Description                            |
+| ------ | ------------------ | ---- | --------------------------- | -------------------------------------- |
+| POST   | `/create/:eventId` | ✓    | `{ seatNumbers: string[] }` | Reserve seats (10-min lock)            |
+| GET    | `/my`              | ✓    | —                           | Get current user's active reservations |
+| GET    | `/:reservationId`  | ✓    | —                           | Get a single reservation by ID         |
 
 ### Bookings — `/api/booking`
 
-| Method | Endpoint | Auth | Body | Description |
-|---|---|---|---|---|
-| POST | `/:reservationId` | ✓ | — | Confirm reservation → permanent booking |
-| GET | `/my` | ✓ | `?page` | Get current user's bookings (paginated, 9/page) |
+| Method | Endpoint          | Auth | Body    | Description                                     |
+| ------ | ----------------- | ---- | ------- | ----------------------------------------------- |
+| POST   | `/:reservationId` | ✓    | —       | Confirm reservation → permanent booking         |
+| GET    | `/my`             | ✓    | `?page` | Get current user's bookings (paginated, 9/page) |
 
 ---
 
@@ -395,20 +423,20 @@ The collection uses a `{{SeatLock}}` variable as the base URL so you can switch 
 2. Name it (e.g., `SeatLock Local`)
 3. Add a variable:
 
-| Variable | Value (local) | Value (production) |
-|---|---|---|
+| Variable   | Value (local)           | Value (production)            |
+| ---------- | ----------------------- | ----------------------------- |
 | `SeatLock` | `http://localhost:5000` | `https://your-api-domain.com` |
 
 4. Select the environment from the top-right dropdown before sending requests
 
 ### Collection Structure
 
-| Folder | Requests |
-|---|---|
-| **Auth** | Register User, Login User, Logout, Get Profile (`/me`), Change Password |
-| **Events** | Get Events (paginated + search), Get Event KPIs, Get Event by ID, Get Event Seats, Create Event, Update Event, Delete Event |
-| **Reservations** | Create Reservation, Get My Reservations, Get Reservation by ID |
-| **Bookings** | Confirm Booking, Get My Bookings |
+| Folder           | Requests                                                                                                                    |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| **Auth**         | Register User, Login User, Logout, Get Profile (`/me`), Change Password                                                     |
+| **Events**       | Get Events (paginated + search), Get Event KPIs, Get Event by ID, Get Event Seats, Create Event, Update Event, Delete Event |
+| **Reservations** | Create Reservation, Get My Reservations, Get Reservation by ID                                                              |
+| **Bookings**     | Confirm Booking, Get My Bookings                                                                                            |
 
 > 💡 **Tip**: Login first (`Auth → Login User`) — the JWT cookie is automatically stored in Postman's cookie jar and sent with all subsequent authenticated requests.
 
@@ -494,12 +522,12 @@ npm run lint
 
 ### Backend — `backend/.env`
 
-| Variable | Required | Description | Example |
-|---|---|---|---|
-| `PORT` | ✗ | Port the server listens on (default: `5000`) | `5000` |
-| `MONGODB_URI` | ✓ | MongoDB connection string | `mongodb+srv://user:pass@cluster.mongodb.net/` |
-| `JWT_SECRET` | ✓ | Secret key for signing JWTs | `my_super_secret_key` |
-| `CLIENT_URL` | ✓ | Frontend origin for CORS (no trailing slash) | `http://localhost:3000` |
+| Variable      | Required | Description                                  | Example                                        |
+| ------------- | -------- | -------------------------------------------- | ---------------------------------------------- |
+| `PORT`        | ✗        | Port the server listens on (default: `5000`) | `5000`                                         |
+| `MONGODB_URI` | ✓        | MongoDB connection string                    | `mongodb+srv://user:pass@cluster.mongodb.net/` |
+| `JWT_SECRET`  | ✓        | Secret key for signing JWTs                  | `my_super_secret_key`                          |
+| `CLIENT_URL`  | ✓        | Frontend origin for CORS (no trailing slash) | `http://localhost:3000`                        |
 
 ```env
 PORT=5000
@@ -512,9 +540,9 @@ CLIENT_URL=http://localhost:3000
 
 ### Frontend — `frontend/.env`
 
-| Variable | Required | Description | Example |
-|---|---|---|---|
-| `NEXT_PUBLIC_API_URL` | ✓ | Base URL for all API calls | `http://localhost:5000/api` |
+| Variable              | Required | Description                | Example                     |
+| --------------------- | -------- | -------------------------- | --------------------------- |
+| `NEXT_PUBLIC_API_URL` | ✓        | Base URL for all API calls | `http://localhost:5000/api` |
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:5000/api
@@ -540,6 +568,7 @@ docker run -p 5000:5000 \
 ```
 
 **How the Dockerfile works:**
+
 1. **Stage 1 (builder)**: Installs all deps, copies source, compiles TypeScript → `dist/`
 2. **Stage 2 (runner)**: Fresh Node 20 Alpine image, installs only production deps, copies `dist/` from builder
 3. Exposes port **5000** and runs `npm start` (`node dist/server.js`)
@@ -548,7 +577,7 @@ docker run -p 5000:5000 \
 
 ## Assumptions
 
-1. **Single role system**: There is no admin/user role distinction. Any authenticated user can create, update, and delete events. Authorization is purely authentication-based.
+1. **Single role system**: There is no admin/user role distinction. Any authenticated user can create, update, and delete events. Authorization is purely authentication-based. If a user views details for an event they created, seat booking is disabled, reservation controls are hidden, and they are presented with an **Attendee List** table showing registration info.
 
 2. **Seat numbering is linear**: Seats are auto-generated as `A1` to `AN` when an event is created. There is no row/section concept — all seats belong to one flat pool.
 
@@ -568,20 +597,24 @@ docker run -p 5000:5000 \
 
 10. **No refresh token**: The JWT has a 7-day TTL. There is no refresh mechanism. After expiry, users must log in again.
 
+11. **Expired Events Lock**: Events in the past (expired events) are frozen; they cannot be updated or deleted by their creators.
+
+12. **Graceful Handling of Deleted Events**: Deleting an event deletes its seat configurations. Associated bookings are preserved, and both the Bookings page and Ticket Modal handle `null` event references gracefully, rendering placeholder details without crashing.
+
 ---
 
 ## Scripts Reference
 
-| Location | Command | Description |
-|---|---|---|
-| `backend/` | `npm run dev` | Start dev server with hot reload (`nodemon` + `tsx`) |
-| `backend/` | `npm run build` | Compile TypeScript to `dist/` |
-| `backend/` | `npm start` | Run compiled production build |
-| `frontend/` | `npm run dev` | Start Next.js dev server |
-| `frontend/` | `npm run build` | Build Next.js for production |
-| `frontend/` | `npm start` | Start Next.js production server |
-| `frontend/` | `npm run lint` | Run ESLint |
+| Location    | Command         | Description                                          |
+| ----------- | --------------- | ---------------------------------------------------- |
+| `backend/`  | `npm run dev`   | Start dev server with hot reload (`nodemon` + `tsx`) |
+| `backend/`  | `npm run build` | Compile TypeScript to `dist/`                        |
+| `backend/`  | `npm start`     | Run compiled production build                        |
+| `frontend/` | `npm run dev`   | Start Next.js dev server                             |
+| `frontend/` | `npm run build` | Build Next.js for production                         |
+| `frontend/` | `npm start`     | Start Next.js production server                      |
+| `frontend/` | `npm run lint`  | Run ESLint                                           |
 
 ---
 
-*Built with ❤️ using Node.js, Express, MongoDB, Next.js, and TypeScript.*
+_Built with ❤️ using Node.js, Express, MongoDB, Next.js, and TypeScript._

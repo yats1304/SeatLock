@@ -20,6 +20,12 @@ const eventSchema = new Schema<IEvent>(
       required: true,
       min: 1,
     },
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
+    },
   },
   {
     timestamps: true,

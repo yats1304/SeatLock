@@ -20,7 +20,9 @@ export function TicketModal({ isOpen, onClose, booking }: TicketModalProps) {
 
   if (!booking) return null;
 
-  const eventDate = new Date(booking.eventId.dateTime);
+  const eventDate = booking.eventId
+    ? new Date(booking.eventId.dateTime)
+    : null;
 
   const handleCopyRef = () => {
     navigator.clipboard.writeText(booking._id);
@@ -59,7 +61,7 @@ export function TicketModal({ isOpen, onClose, booking }: TicketModalProps) {
               Event
             </span>
             <h3 className="text-base font-bold leading-tight text-foreground mt-0.5">
-              {booking.eventId.name}
+              {booking.eventId?.name || "Deleted Event"}
             </h3>
           </div>
 
@@ -71,20 +73,28 @@ export function TicketModal({ isOpen, onClose, booking }: TicketModalProps) {
               <div className="flex items-center gap-1 mt-0.5 text-foreground">
                 <Calendar className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                 <span className="font-medium">
-                  {eventDate.toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
+                  {eventDate ? (
+                    eventDate.toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })
+                  ) : (
+                    "Date N/A"
+                  )}
                 </span>
               </div>
               <div className="flex items-center gap-1 mt-0.5 text-muted-foreground text-[10px] pl-4.5">
                 <Clock className="h-3 w-3 shrink-0" />
                 <span>
-                  {eventDate.toLocaleTimeString("en-US", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
+                  {eventDate ? (
+                    eventDate.toLocaleTimeString("en-US", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  ) : (
+                    "Time N/A"
+                  )}
                 </span>
               </div>
             </div>
@@ -96,7 +106,7 @@ export function TicketModal({ isOpen, onClose, booking }: TicketModalProps) {
               <div className="flex items-start gap-1 mt-0.5 text-foreground">
                 <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
                 <span className="font-medium line-clamp-2 leading-tight">
-                  {booking.eventId.venue}
+                  {booking.eventId?.venue || "Venue N/A"}
                 </span>
               </div>
             </div>

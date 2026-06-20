@@ -126,7 +126,9 @@ export default function BookingsPage() {
           <>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {bookings.map((booking) => {
-                const eventDate = new Date(booking.eventId.dateTime);
+                const eventDate = booking.eventId
+                  ? new Date(booking.eventId.dateTime)
+                  : null;
                 const bookedAt = new Date(booking.bookedAt);
 
                 return (
@@ -143,12 +145,12 @@ export default function BookingsPage() {
                       {/* Event title & venue */}
                       <div className="space-y-1 pr-16">
                         <h3 className="text-lg font-semibold leading-tight line-clamp-1 group-hover:text-foreground transition-colors">
-                          {booking.eventId.name}
+                          {booking.eventId?.name || "Deleted Event"}
                         </h3>
                         <div className="flex items-center gap-1.5 text-muted-foreground text-sm">
                           <MapPin className="h-3.5 w-3.5 shrink-0" />
                           <span className="truncate">
-                            {booking.eventId.venue}
+                            {booking.eventId?.venue || "Venue N/A"}
                           </span>
                         </div>
                       </div>
@@ -158,16 +160,22 @@ export default function BookingsPage() {
                         <div className="flex items-center gap-1.5">
                           <Calendar className="h-4 w-4" />
                           <span>
-                            {eventDate.toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            })}
-                            {" • "}
-                            {eventDate.toLocaleTimeString("en-US", {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
+                            {eventDate ? (
+                              <>
+                                {eventDate.toLocaleDateString("en-US", {
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                })}
+                                {" • "}
+                                {eventDate.toLocaleTimeString("en-US", {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
+                              </>
+                            ) : (
+                              "Date N/A"
+                            )}
                           </span>
                         </div>
                         <div className="flex items-center gap-1.5">

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -9,7 +9,7 @@ import { Modal } from "@/components/ui/Modal";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { createEvent } from "@/services/event.service";
+import { createEvent, updateEvent } from "@/services/event.service";
 
 const createEventSchema = z.object({
   name: z.string().min(1, "Event name is required"),
@@ -29,12 +29,14 @@ interface CreateEventModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  eventToEdit?: any;
 }
 
 export default function CreateEventModal({
   isOpen,
   onClose,
   onSuccess,
+  eventToEdit,
 }: CreateEventModalProps) {
   const [creating, setCreating] = useState(false);
 
@@ -53,22 +55,59 @@ export default function CreateEventModal({
     },
   });
 
+  useEffect(() => {
+    if (eventToEdit) {
+      const date = new Date(eventToEdit.dateTime);
+      const localOffset = date.getTimezoneOffset() * 60000;
+      const localISOTime = new Date(date.getTime() - localOffset)
+        .toISOString()
+        .slice(0, 16);
+
+      reset({
+        name: eventToEdit.name,
+        venue: eventToEdit.venue,
+        dateTime: localISOTime,
+        totalSeats: String(eventToEdit.totalSeats),
+      });
+    } else {
+      reset({
+        name: "",
+        venue: "",
+        dateTime: "",
+        totalSeats: "",
+      });
+    }
+  }, [eventToEdit, reset, isOpen]);
+
   const onSubmit = async (data: CreateEventFormData) => {
     try {
       setCreating(true);
       const isoDateTime = new Date(data.dateTime).toISOString();
-      await createEvent({
-        name: data.name,
-        venue: data.venue,
-        dateTime: isoDateTime,
-        totalSeats: Number(data.totalSeats),
-      });
-      toast.success("Event created successfully!");
+      if (eventToEdit) {
+        await updateEvent(eventToEdit._id, {
+          name: data.name,
+          venue: data.venue,
+          dateTime: isoDateTime,
+          totalSeats: Number(data.totalSeats),
+        });
+        toast.success("Event updated successfully!");
+      } else {
+        await createEvent({
+          name: data.name,
+          venue: data.venue,
+          dateTime: isoDateTime,
+          totalSeats: Number(data.totalSeats),
+        });
+        toast.success("Event created successfully!");
+      }
       reset();
       onSuccess();
       onClose();
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to create event");
+      toast.error(
+        error.response?.data?.message ||
+          `Failed to ${eventToEdit ? "update" : "create"} event`,
+      );
     } finally {
       setCreating(false);
     }
@@ -85,8 +124,12 @@ export default function CreateEventModal({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Create New Event"
-      description="Fill out the details below to host a new seat booking event."
+      title={eventToEdit ? "Edit Event" : "Create New Event"}
+      description={
+        eventToEdit
+          ? "Modify the details of the event below."
+          : "Fill out the details below to host a new seat booking event."
+      }
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-1.5">
@@ -126,7 +169,9 @@ export default function CreateEventModal({
               aria-invalid={!!errors.dateTime}
             />
             {errors.dateTime && (
-              <p className="text-xs text-destructive">{errors.dateTime.message}</p>
+              <p className="text-xs text-destructive">
+                {errors.dateTime.message}
+              </p>
             )}
           </div>
 
@@ -141,7 +186,9 @@ export default function CreateEventModal({
               aria-invalid={!!errors.totalSeats}
             />
             {errors.totalSeats && (
-              <p className="text-xs text-destructive">{errors.totalSeats.message}</p>
+              <p className="text-xs text-destructive">
+                {errors.totalSeats.message}
+              </p>
             )}
           </div>
         </div>
@@ -156,8 +203,18 @@ export default function CreateEventModal({
           >
             Cancel
           </Button>
-          <Button type="submit" className="sm:w-auto w-full cursor-pointer" disabled={creating}>
-            {creating ? "Creating..." : "Create Event"}
+          <Button
+            type="submit"
+            className="sm:w-auto w-full cursor-pointer"
+            disabled={creating}
+          >
+            {creating
+              ? eventToEdit
+                ? "Saving..."
+                : "Creating..."
+              : eventToEdit
+                ? "Save Changes"
+                : "Create Event"}
           </Button>
         </div>
       </form>

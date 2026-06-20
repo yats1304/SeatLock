@@ -82,6 +82,11 @@ export default function Navbar() {
         label: "Bookings",
         icon: Ticket,
       },
+      {
+        href: "/my-events",
+        label: "My Events",
+        icon: CalendarDays,
+      },
     );
   }
 

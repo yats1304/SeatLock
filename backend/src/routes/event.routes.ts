@@ -13,6 +13,8 @@ const router = express.Router();
 router.get("/", validate(getEventsSchema, "query"), eventController.getEvents);
 router.get("/kpis", eventController.getEventKPIs);
 router.get("/:eventId/seats", eventController.getEventSeats);
+router.get("/my-events", isAuth, eventController.getMyEvents);
+router.get("/:id/attendees", isAuth, eventController.getEventAttendees);
 router.get("/:id", eventController.getEventById);
 router.post(
   "/create",

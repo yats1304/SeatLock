@@ -37,8 +37,36 @@ export const createEvent = async (payload: {
   return data;
 };
 
-export const updateEvent = async (eventId: string) => {
-  const { data } = await api.patch(`event/:${eventId}`);
+export const updateEvent = async (
+  eventId: string,
+  payload: {
+    name?: string;
+    venue?: string;
+    dateTime?: string;
+    totalSeats?: number | string;
+  },
+) => {
+  const { data } = await api.patch(`/event/${eventId}`, payload);
+
+  return data;
+};
+
+export const deleteEvent = async (eventId: string) => {
+  const { data } = await api.delete(`/event/${eventId}`);
+
+  return data;
+};
+
+export const getMyEvents = async (page = 1, search = "") => {
+  const { data } = await api.get(
+    `/event/my-events?page=${page}&search=${search}`,
+  );
+
+  return data;
+};
+
+export const getEventAttendees = async (id: string) => {
+  const { data } = await api.get(`/event/${id}/attendees`);
 
   return data;
 };

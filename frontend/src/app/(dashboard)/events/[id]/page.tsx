@@ -2,7 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { getEventById, getEventSeats } from "@/services/event.service";
+import {
+  getEventById,
+  getEventSeats,
+  getEventAttendees,
+} from "@/services/event.service";
 import { reserveSeats } from "@/services/reservation.service";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -25,11 +29,12 @@ import { StatCard } from "@/components/event/StatCard";
 export default function EventDetailsPage() {
   const { id } = useParams();
   const router = useRouter();
-  const { isAuth } = useAppSelector((state) => state.auth);
+  const { isAuth, user } = useAppSelector((state) => state.auth);
 
   const [event, setEvent] = useState<any>(null);
   const [seats, setSeats] = useState<any[]>([]);
   const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
+  const [attendees, setAttendees] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [redirecting, setRedirecting] = useState(false);
@@ -50,6 +55,20 @@ export default function EventDetailsPage() {
       ]);
       setEvent(eventData.event);
       setSeats(seatData.seats);
+
+      const isCreator =
+        isAuth &&
+        user &&
+        eventData.event &&
+        eventData.event.createdBy === user._id;
+      if (isCreator) {
+        try {
+          const attendeeData = await getEventAttendees(id as string);
+          setAttendees(attendeeData.attendees || []);
+        } catch (err) {
+          console.error("Failed to load attendees:", err);
+        }
+      }
     } catch (err: any) {
       console.error(err);
       setError(err?.response?.data?.message || "Failed to load event details.");
@@ -59,6 +78,9 @@ export default function EventDetailsPage() {
   };
 
   const toggleSeat = (seatNumber: string) => {
+    if (isCreator) {
+      return;
+    }
     if (isPast) {
       toast.error("Cannot select seats for a past event.");
       return;
@@ -135,6 +157,7 @@ export default function EventDetailsPage() {
     );
   }
 
+  const isCreator = isAuth && user && event && event.createdBy === user._id;
   const eventDate = new Date(event.dateTime);
   const isPast = eventDate < new Date();
 
@@ -235,7 +258,8 @@ export default function EventDetailsPage() {
         <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-destructive flex items-center gap-3">
           <AlertCircle className="h-5 w-5 shrink-0" />
           <span className="text-sm font-medium">
-            This event has already passed. You cannot select or reserve seats for past events.
+            This event has already passed. You cannot select or reserve seats
+            for past events.
           </span>
         </div>
       )}
@@ -264,27 +288,29 @@ export default function EventDetailsPage() {
       </div>
 
       {/* Reservation panel */}
-      <Card className="border border-border">
-        <CardContent className="p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <p className="text-sm text-muted-foreground">Selected Seats</p>
-            <p className="text-lg font-semibold">
-              {selectedSeats.length > 0
-                ? selectedSeats.join(", ")
-                : "No seats selected"}
-            </p>
-          </div>
-          <Button
-            size="lg"
-            disabled={selectedSeats.length === 0 || loading || isPast}
-            onClick={handleReserveSeats}
-            className="gap-2 group"
-          >
-            <Ticket className="h-4 w-4 transition-transform group-hover:scale-110" />
-            Reserve {selectedSeats.length > 0 && `(${selectedSeats.length})`}
-          </Button>
-        </CardContent>
-      </Card>
+      {!isCreator && (
+        <Card className="border border-border">
+          <CardContent className="p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <p className="text-sm text-muted-foreground">Selected Seats</p>
+              <p className="text-lg font-semibold">
+                {selectedSeats.length > 0
+                  ? selectedSeats.join(", ")
+                  : "No seats selected"}
+              </p>
+            </div>
+            <Button
+              size="lg"
+              disabled={selectedSeats.length === 0 || loading || isPast}
+              onClick={handleReserveSeats}
+              className="gap-2 group"
+            >
+              <Ticket className="h-4 w-4 transition-transform group-hover:scale-110" />
+              Reserve {selectedSeats.length > 0 && `(${selectedSeats.length})`}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Overlay when not authenticated */}
       {!isAuth && (
@@ -300,6 +326,81 @@ export default function EventDetailsPage() {
             to reserve seats.
           </p>
         </div>
+      )}
+
+      {/* Attendee List for creator */}
+      {isCreator && (
+        <Card className="border border-border">
+          <CardContent className="p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+              <div>
+                <h2 className="text-xl font-semibold">Attendee List</h2>
+                <p className="text-sm text-muted-foreground">
+                  View users who booked or reserved seats for your event.
+                </p>
+              </div>
+              <span className="self-start rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                {attendees.length}{" "}
+                {attendees.length === 1 ? "Registration" : "Registrations"}
+              </span>
+            </div>
+
+            {attendees.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm border-collapse">
+                  <thead>
+                    <tr className="border-b border-border text-muted-foreground font-medium">
+                      <th className="py-3 px-4">Attendee</th>
+                      <th className="py-3 px-4 text-center">Seat(s)</th>
+                      <th className="py-3 px-4 text-center">Status</th>
+                      <th className="py-3 px-4 text-right">Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {attendees.map((attendee) => (
+                      <tr
+                        key={attendee.id}
+                        className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
+                      >
+                        <td className="py-4 px-4">
+                          <div className="font-semibold">
+                            {attendee.user?.name || "Unknown User"}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {attendee.user?.email || "N/A"}
+                          </div>
+                        </td>
+                        <td className="py-4 px-4 text-center font-mono font-medium">
+                          {attendee.seatNumbers.join(", ")}
+                        </td>
+                        <td className="py-4 px-4 text-center">
+                          <span
+                            className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider ${
+                              attendee.status === "booked"
+                                ? "bg-green-500/10 text-green-600 dark:text-green-400"
+                                : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                            }`}
+                          >
+                            {attendee.status}
+                          </span>
+                        </td>
+                        <td className="py-4 px-4 text-right text-xs text-muted-foreground">
+                          {new Date(attendee.date).toLocaleString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="text-center py-10 border border-dashed border-border rounded-xl">
+                <p className="text-muted-foreground">
+                  No bookings or reservations yet for this event.
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       )}
     </div>
   );

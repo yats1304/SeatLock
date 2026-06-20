@@ -25,8 +25,14 @@
             },
             "url": {
               "raw": "{{SeatLock}}/api/auth/register",
-              "host": ["{{SeatLock}}"],
-              "path": ["api", "auth", "register"]
+              "host": [
+                "{{SeatLock}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
             }
           },
           "response": []
@@ -47,8 +53,14 @@
             },
             "url": {
               "raw": "{{SeatLock}}/api/auth/login",
-              "host": ["{{SeatLock}}"],
-              "path": ["api", "auth", "login"]
+              "host": [
+                "{{SeatLock}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
             }
           },
           "response": []
@@ -68,8 +80,14 @@
             "header": [],
             "url": {
               "raw": "{{SeatLock}}/api/auth/me",
-              "host": ["{{SeatLock}}"],
-              "path": ["api", "auth", "me"]
+              "host": [
+                "{{SeatLock}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
             }
           },
           "response": []
@@ -77,8 +95,28 @@
         {
           "name": "Change password",
           "request": {
-            "method": "GET",
-            "header": []
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"currentPassword\": \"\",\r\n    \"newPassword\": \"\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{SeatLock}}/api/auth/change-password",
+              "host": [
+                "{{SeatLock}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "change-password"
+              ]
+            }
           },
           "response": []
         }
@@ -103,8 +141,14 @@
             },
             "url": {
               "raw": "{{SeatLock}}/api/event/create",
-              "host": ["{{SeatLock}}"],
-              "path": ["api", "event", "create"]
+              "host": [
+                "{{SeatLock}}"
+              ],
+              "path": [
+                "api",
+                "event",
+                "create"
+              ]
             }
           },
           "response": []
@@ -125,8 +169,14 @@
             },
             "url": {
               "raw": "{{SeatLock}}/api/event/:id",
-              "host": ["{{SeatLock}}"],
-              "path": ["api", "event", ":id"],
+              "host": [
+                "{{SeatLock}}"
+              ],
+              "path": [
+                "api",
+                "event",
+                ":id"
+              ],
               "variable": [
                 {
                   "key": "id",
@@ -151,8 +201,73 @@
             },
             "url": {
               "raw": "{{SeatLock}}/api/event/",
-              "host": ["{{SeatLock}}"],
-              "path": ["api", "event", ""]
+              "host": [
+                "{{SeatLock}}"
+              ],
+              "path": [
+                "api",
+                "event",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get my events",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{SeatLock}}/api/event/",
+              "host": [
+                "{{SeatLock}}"
+              ],
+              "path": [
+                "api",
+                "event",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get attendees by event Id",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{SeatLock}}/api/event/:eventId/attendees",
+              "host": [
+                "{{SeatLock}}"
+              ],
+              "path": [
+                "api",
+                "event",
+                ":eventId",
+                "attendees"
+              ],
+              "variable": [
+                {
+                  "key": "eventId",
+                  "value": "6a365593b064f2a55a7f6e34"
+                }
+              ]
             }
           },
           "response": []
@@ -171,8 +286,14 @@
             },
             "url": {
               "raw": "{{SeatLock}}/api/event/",
-              "host": ["{{SeatLock}}"],
-              "path": ["api", "event", ""]
+              "host": [
+                "{{SeatLock}}"
+              ],
+              "path": [
+                "api",
+                "event",
+                ""
+              ]
             }
           },
           "response": []
@@ -191,8 +312,14 @@
             },
             "url": {
               "raw": "{{SeatLock}}/api/event/",
-              "host": ["{{SeatLock}}"],
-              "path": ["api", "event", ""]
+              "host": [
+                "{{SeatLock}}"
+              ],
+              "path": [
+                "api",
+                "event",
+                ""
+              ]
             }
           },
           "response": []
@@ -208,8 +335,14 @@
             },
             "url": {
               "raw": "{{SeatLock}}/api/event/:id",
-              "host": ["{{SeatLock}}"],
-              "path": ["api", "event", ":id"],
+              "host": [
+                "{{SeatLock}}"
+              ],
+              "path": [
+                "api",
+                "event",
+                ":id"
+              ],
               "variable": [
                 {
                   "key": "id",
@@ -227,8 +360,15 @@
             "header": [],
             "url": {
               "raw": "{{SeatLock}}/api/event/:eventId/seats",
-              "host": ["{{SeatLock}}"],
-              "path": ["api", "event", ":eventId", "seats"],
+              "host": [
+                "{{SeatLock}}"
+              ],
+              "path": [
+                "api",
+                "event",
+                ":eventId",
+                "seats"
+              ],
               "variable": [
                 {
                   "key": "eventId",
@@ -260,8 +400,15 @@
             },
             "url": {
               "raw": "{{SeatLock}}/api/reservations/create/:eventId",
-              "host": ["{{SeatLock}}"],
-              "path": ["api", "reservations", "create", ":eventId"],
+              "host": [
+                "{{SeatLock}}"
+              ],
+              "path": [
+                "api",
+                "reservations",
+                "create",
+                ":eventId"
+              ],
               "variable": [
                 {
                   "key": "eventId",
@@ -291,8 +438,14 @@
             },
             "url": {
               "raw": "{{SeatLock}}/api/reservations/my",
-              "host": ["{{SeatLock}}"],
-              "path": ["api", "reservations", "my"]
+              "host": [
+                "{{SeatLock}}"
+              ],
+              "path": [
+                "api",
+                "reservations",
+                "my"
+              ]
             }
           },
           "response": []
@@ -316,8 +469,14 @@
             },
             "url": {
               "raw": "{{SeatLock}}/api/reservations/:reservationId",
-              "host": ["{{SeatLock}}"],
-              "path": ["api", "reservations", ":reservationId"],
+              "host": [
+                "{{SeatLock}}"
+              ],
+              "path": [
+                "api",
+                "reservations",
+                ":reservationId"
+              ],
               "variable": [
                 {
                   "key": "reservationId",
@@ -340,8 +499,14 @@
             "header": [],
             "url": {
               "raw": "{{SeatLock}}/api/booking/:reservationId",
-              "host": ["{{SeatLock}}"],
-              "path": ["api", "booking", ":reservationId"],
+              "host": [
+                "{{SeatLock}}"
+              ],
+              "path": [
+                "api",
+                "booking",
+                ":reservationId"
+              ],
               "variable": [
                 {
                   "key": "reservationId",
@@ -369,7 +534,9 @@
         "header": [],
         "url": {
           "raw": "{{SeatLock}}",
-          "host": ["{{SeatLock}}"]
+          "host": [
+            "{{SeatLock}}"
+          ]
         }
       },
       "response": []
@@ -382,7 +549,9 @@
         "type": "text/javascript",
         "packages": {},
         "requests": {},
-        "exec": [""]
+        "exec": [
+          ""
+        ]
       }
     },
     {
@@ -391,7 +560,9 @@
         "type": "text/javascript",
         "packages": {},
         "requests": {},
-        "exec": [""]
+        "exec": [
+          ""
+        ]
       }
     }
   ],
